@@ -61,8 +61,8 @@ const App = () => {
         codeRepetition: true,
         tryVertical: true,
         frameRate: 15,
-        width: 480,
-        height: 240,
+        width: 600,
+        height: 200,
         facingMode: "environment"
       },
       singleChannel: false
@@ -155,8 +155,8 @@ const App = () => {
       </div>
 
       {books.length > 0 && (
-        <div className="py-8 px-2">
-          <h2 className="text-xl font-bold font-mono text-center">読み込んだ書籍一覧</h2>
+        <div className="py-8 px-2 max-h-[75%] overflow-auto">
+          <h2 className="text-xl font-bold font-mono text-center">読み込んだ書籍一覧<div class="badge">{books.length}</div></h2>
           <table className="table table-compact w-full">
             <thead>
               <tr>
