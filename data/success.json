@@ -1,0 +1,77 @@
+{
+  "kind": "books#volumes",
+  "totalItems": 1,
+  "items": [
+    {
+      "kind": "books#volume",
+      "id": "kqU6zwEACAAJ",
+      "etag": "AvwwNXQBIOs",
+      "selfLink": "https://www.googleapis.com/books/v1/volumes/kqU6zwEACAAJ",
+      "volumeInfo": {
+        "title": "Web3とDAO 誰もが主役になれる「新しい経済」",
+        "authors": [
+          "亀井聡彦",
+          "鈴木雄大",
+          "赤澤直樹"
+        ],
+        "publishedDate": "2022-07-06",
+        "description": "ブロックチェーンによって成立する新しい組織のあり方",
+        "industryIdentifiers": [
+          {
+            "type": "ISBN_10",
+            "identifier": "4761276177"
+          },
+          {
+            "type": "ISBN_13",
+            "identifier": "9784761276171"
+          }
+        ],
+        "readingModes": {
+          "text": false,
+          "image": false
+        },
+        "pageCount": 240,
+        "printType": "BOOK",
+        "maturityRating": "NOT_MATURE",
+        "allowAnonLogging": false,
+        "contentVersion": "preview-1.0.0",
+        "panelizationSummary": {
+          "containsEpubBubbles": false,
+          "containsImageBubbles": false
+        },
+        "imageLinks": {
+          "smallThumbnail": "http://books.google.com/books/content?id=kqU6zwEACAAJ&printsec=frontcover&img=1&zoom=5&source=gbs_api",
+          "thumbnail": "http://books.google.com/books/content?id=kqU6zwEACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api"
+        },
+        "language": "ja",
+        "previewLink": "http://books.google.co.jp/books?id=kqU6zwEACAAJ&dq=isbn:9784761276171&hl=&cd=1&source=gbs_api",
+        "infoLink": "http://books.google.co.jp/books?id=kqU6zwEACAAJ&dq=isbn:9784761276171&hl=&source=gbs_api",
+        "canonicalVolumeLink": "https://books.google.com/books/about/Web3%E3%81%A8DAO_%E8%AA%B0%E3%82%82%E3%81%8C%E4%B8%BB%E5%BD%B9%E3%81%AB%E3%81%AA%E3%82%8C%E3%82%8B.html?hl=&id=kqU6zwEACAAJ"
+      },
+      "saleInfo": {
+        "country": "JP",
+        "saleability": "NOT_FOR_SALE",
+        "isEbook": false
+      },
+      "accessInfo": {
+        "country": "JP",
+        "viewability": "NO_PAGES",
+        "embeddable": false,
+        "publicDomain": false,
+        "textToSpeechPermission": "ALLOWED",
+        "epub": {
+          "isAvailable": false
+        },
+        "pdf": {
+          "isAvailable": false
+        },
+        "webReaderLink": "http://play.google.com/books/reader?id=kqU6zwEACAAJ&hl=&printsec=frontcover&source=gbs_api",
+        "accessViewStatus": "NONE",
+        "quoteSharingAllowed": false
+      },
+      "searchInfo": {
+        "textSnippet": "「DAO(ダオ)」=ブロックチェーンによって成立する新しい組織のあり方。"
+      }
+    }
+  ]
+}
