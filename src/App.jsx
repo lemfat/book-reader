@@ -2,13 +2,13 @@ import React, { useState, useEffect } from 'react'
 import Quagga from "quagga";
 import axios from 'axios'
 import "./App.css"
-
+import { BiBarcodeReader } from 'react-icons/bi';
 
 const App = () => {
   const [isCapture, setIsCapture] = useState(false)
   const [running, setRunning] = useState(false)
   const [barcode, setBarcode] = useState(null)
-  const [book, setBook] = useState(null)
+  const [books, setBooks] = useState([])
   const [error, setError] = useState(null)
 
 
@@ -40,7 +40,7 @@ const App = () => {
       infoLink: bookData?.volumeInfo?.infoLink
     }
     console.log(bookInfo)
-    setBook(bookInfo)
+    setBooks(prev => [...prev, bookInfo])
   }
 
 
@@ -55,8 +55,8 @@ const App = () => {
         codeRepetition: true,
         tryVertical: true,
         frameRate: 15,
-        width: 640,
-        height: 480,
+        width: 480,
+        height: 240,
         facingMode: "environment"
       },
       singleChannel: false
@@ -102,50 +102,8 @@ const App = () => {
       Quagga.start();
     });
 
-    Quagga.onProcessed(result => {
-      var drawingCtx = Quagga.canvas.ctx.overlay,
-        drawingCanvas = Quagga.canvas.dom.overlay;
-
-      if (result) {
-        if (result.boxes) {
-          drawingCtx.clearRect(
-            0,
-            0,
-            Number(drawingCanvas.getAttribute("width")),
-            Number(drawingCanvas.getAttribute("height"))
-          );
-          result.boxes
-            .filter((box) => {
-              return box !== result.box;
-            })
-            .forEach((box) => {
-              Quagga.ImageDebug.drawPath(box, { x: 0, y: 1 }, drawingCtx, {
-                color: "green",
-                lineWidth: 2
-              });
-            });
-        }
-
-        if (result.box) {
-          Quagga.ImageDebug.drawPath(result.box, { x: 0, y: 1 }, drawingCtx, {
-            color: "#00F",
-            lineWidth: 2
-          });
-        }
-
-        if (result.codeResult && result.codeResult.code) {
-          Quagga.ImageDebug.drawPath(
-            result.line,
-            { x: "x", y: "y" },
-            drawingCtx,
-            { color: "red", lineWidth: 3 }
-          );
-        }
-      }
-    });
     setRunning(true)
     setBarcode(null)
-    setBook(null)
     setError(null)
 
   }, [isCapture])
@@ -159,47 +117,95 @@ const App = () => {
   }, [barcode])
 
   return (
-    <div>
-      <h2>バーコードスキャナ</h2>
+    <div className="flex flex-col justify-center w-[480px]">
+      <h2 className="text-2xl p-4 text-center">バーコードスキャナ</h2>
 
-      <hr />
-      {barcode ? `バーコード：${barcode}` : isCapture && "スキャン中"}
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      <div>
-        {<button onClick={() => setIsCapture(!isCapture)}>{isCapture ? "スキャンを停止する" : "スキャンを開始する"}</button>}
+      <div className="flex justify-center">
+        <label
+          htmlFor="scanner-modal"
+          className="flex justify-center card text-center border border-base-content w-36 bg-base-100 p-4"
+          onClick={() => setIsCapture(true)}>
+          <div className="flex m-auto">
+            <BiBarcodeReader size={80} />
+          </div>
+        </label>
+
+        <input type="checkbox" id="scanner-modal" className="modal-toggle" />
+        <label htmlFor="scanner-modal" className="modal cursor-pointer" onClick={() => setIsCapture(false)}>
+          <label className="modal-box relative" htmlFor="">
+            <div>
+              {barcode ? `バーコード：${barcode}` : isCapture && "スキャン中"}
+              {error && <p style={{ color: 'red' }}>{error}</p>}
+            </div>
+
+            <div id="camera-area" className="camera-area" style={{ visibility: !isCapture && 'hidden' }}>
+              <div className="detect-area">
+                <p className="relative top-14 text-lg text-red z-50 backdrop-blur-lg bg-white/30 text-center">
+                  バーコード
+                </p>
+              </div>
+            </div>
+          </label>
+        </label>
       </div>
-      <hr />
-      {book && (
-        <div>
-          <table>
+
+      {books.length > 0 && (
+        <div className="overflow-x-auto">
+          <table className="table table-compact w-full">
+            <thead>
+              <tr>
+                <th>
+                  <label>
+                    <input type="checkbox" className="checkbox" />
+                  </label>
+                </th>
+                <th>タイトル</th>
+                <th>著者</th>
+                <th>出版日</th>
+                <th>ページ数</th>
+                <th></th>
+              </tr>
+            </thead>
             <tbody>
-              <tr>
-                <td>タイトル</td>
-                <td><a href={book?.infoLink}>{book?.title}</a></td>
-              </tr>
-              <tr>
-                <td>著者s</td>
-                <td>{book?.authors?.join(',')}</td>
-              </tr>
-              <tr>
-                <td>出版日</td>
-                <td>{book?.publishedDate}</td>
-              </tr>
-              <tr>
-                <td>ページ数</td>
-                <td>{book?.pageCount}</td>
-              </tr>
-              <tr>
-                <td>書影</td>
-                <td>{book?.thumbnail ? <img src={book.thumbnail} /> : '画像はありません'}</td>
-              </tr>
+              {books.map(book => (
+                <tr key={book.isbn}>
+                  <th>
+                    <label>
+                      <input type="checkbox" className="checkbox" />
+                    </label>
+                  </th>
+                  <td>
+                    <div className="flex items-center space-x-3">
+                      <div className="">
+                        {book?.thumbnail ? <img src={book.thumbnail} width={62} /> : '画像はありません'}
+                      </div>
+                      <div className="w-1/2 whitespace-pre-wrap">
+                        <div className="font-bold">{book?.title}</div>
+                        {/* <div className="text-sm opacity-50">{book?.authors?.join(',')}</div> */}
+                      </div>
+                    </div>
+                  </td>
+
+                  <td>{book?.authors?.join(',')}</td>
+                  <td>{book?.publishedDate}</td>
+                  <td>{book?.pageCount}</td>
+                </tr>
+              ))}
             </tbody>
+            <tfoot>
+              <tr>
+                <th></th>
+                <th>タイトル</th>
+                <th>著者</th>
+                <th>出版日</th>
+                <th>ページ数</th>
+                <th></th>
+              </tr>
+            </tfoot>
           </table>
         </div>
       )}
-      <div id="camera-area" className="camera-area" style={{ visibility: !isCapture && 'hidden' }}>
-        <div className="detect-area"></div>
-      </div>
+
     </div>
   )
 }
