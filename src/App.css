@@ -14,8 +14,8 @@
 }
 .camera-area .detect-area {
   position: absolute;
-  top: 33%;
-  bottom: 33%;
+  top: 20%;
+  bottom: 20%;
   left: 10%;
   right: 10%;
   border: 2px solid #000;
