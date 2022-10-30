@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react'
 import Quagga from "quagga";
 import axios from 'axios'
+import "./App.css"
 
 
 const App = () => {
-  const [camera, setCamera] = useState(false)
-  const [moving, setMoving] = useState(false)
+  const [isCapture, setIsCapture] = useState(false)
+  const [running, setRunning] = useState(false)
   const [barcode, setBarcode] = useState(null)
   const [book, setBook] = useState(null)
   const [error, setError] = useState(null)
@@ -47,8 +48,17 @@ const App = () => {
     inputStream: {
       name: "Live",
       type: "LiveStream",
-      target: '#preview',
-      size: 1000,
+      target: document.querySelector("#camera-area"),
+      constraints: {
+        decodeBarCodeRate: 3,
+        successTimeout: 500,
+        codeRepetition: true,
+        tryVertical: true,
+        frameRate: 15,
+        width: 640,
+        height: 480,
+        facingMode: "environment"
+      },
       singleChannel: false
     },
     locator: {
@@ -68,11 +78,11 @@ const App = () => {
 
   useEffect(() => {
     // 初期状態
-    if (!camera && !moving) return;
+    if (!isCapture && !running) return;
 
     // カメラ起動中にカメラを停止する操作が行われた
-    if (!camera && moving) {
-      setMoving(false);
+    if (!isCapture && running) {
+      setRunning(false);
       Quagga.stop()
       return
     }
@@ -133,30 +143,30 @@ const App = () => {
         }
       }
     });
-    setMoving(true)
+    setRunning(true)
     setBarcode(null)
     setBook(null)
     setError(null)
 
-  }, [camera])
+  }, [isCapture])
 
   useEffect(() => {
     // Quaggaがバーコードを読み込んだ
     if (barcode) {
-      setCamera(false)
+      setIsCapture(false)
       barcodeApi(barcode)
     }
   }, [barcode])
 
   return (
-    <>
+    <div>
       <h2>バーコードスキャナ</h2>
 
       <hr />
-      {barcode ? `バーコード：${barcode}` : camera && "スキャン中"}
+      {barcode ? `バーコード：${barcode}` : isCapture && "スキャン中"}
       {error && <p style={{ color: 'red' }}>{error}</p>}
       <div>
-        {<button onClick={() => setCamera(!camera)}>{camera ? "スキャンを停止する" : "スキャンを開始する"}</button>}
+        {<button onClick={() => setIsCapture(!isCapture)}>{isCapture ? "スキャンを停止する" : "スキャンを開始する"}</button>}
       </div>
       <hr />
       {book && (
@@ -187,8 +197,10 @@ const App = () => {
           </table>
         </div>
       )}
-      <div id="preview"></div>
-    </>
+      <div id="camera-area" className="camera-area" style={{ visibility: !isCapture && 'hidden' }}>
+        <div className="detect-area"></div>
+      </div>
+    </div>
   )
 }
 
