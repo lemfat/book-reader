@@ -10,7 +10,7 @@
 .camera-area video, .camera-area canvas {
   margin-top: -50px;
   width: 400px;
-  height: 280px;
+  height: 100px;
 }
 .camera-area .detect-area {
   position: absolute;
