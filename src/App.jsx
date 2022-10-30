@@ -61,8 +61,8 @@ const App = () => {
         codeRepetition: true,
         tryVertical: true,
         frameRate: 15,
-        width: 240,
-        height: 120,
+        width: 780,
+        height: 560,
         facingMode: "environment"
       },
       singleChannel: false

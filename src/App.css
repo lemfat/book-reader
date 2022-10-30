@@ -1,8 +1,8 @@
 .camera-area {
   margin: auto;
   overflow: hidden;
-  width: 240px;
-  height: 120px;
+  width: 360px;
+  height: 180px;
   /* relativeに設定 */
   position: relative;
   /* 検出範囲のサイズに合わせ枠線を引く */
