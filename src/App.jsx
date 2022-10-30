@@ -13,8 +13,14 @@ const App = () => {
 
 
   const barcodeApi = async (isbn) => {
-    if (!((isbn.substring(0, 3) === "978" && isbn.length === 13) || (isbn.substring(0, 1) && isbn.length === 10))) {
-      setError("ISBNは「978」から始まる13桁か「4」から始まる10桁のコードである必要があります")
+    if (!((isbn.substring(0, 2) === "97" && isbn.length === 13) || (isbn.substring(0, 1) && isbn.length === 10))) {
+      setError("ISBNは「97」から始まる13桁、もしくは「4」から始まる10桁のコードである必要があります")
+      return
+    }
+
+    const isReaded = books.find(book => book.isbn === isbn)
+    if (isReaded) {
+      setError("すでに読み込み済みの書籍です")
       return
     }
     // ISBNから書籍データを取得する
@@ -40,7 +46,7 @@ const App = () => {
       infoLink: bookData?.volumeInfo?.infoLink
     }
     console.log(bookInfo)
-    setBooks(prev => [...prev, bookInfo])
+    setBooks(prev => [bookInfo, ...prev])
   }
 
 
@@ -111,101 +117,86 @@ const App = () => {
   useEffect(() => {
     // Quaggaがバーコードを読み込んだ
     if (barcode) {
-      setIsCapture(false)
+      // setIsCapture(false)
       barcodeApi(barcode)
     }
   }, [barcode])
 
   return (
-    <div className="flex flex-col justify-center w-[480px]">
+    <div className="flex flex-col justify-center p-4">
       <h2 className="text-2xl p-4 text-center">バーコードスキャナ</h2>
 
       <div className="flex justify-center">
         <label
           htmlFor="scanner-modal"
-          className="flex justify-center card text-center border border-base-content w-36 bg-base-100 p-4"
-          onClick={() => setIsCapture(true)}>
+          className={`flex justify-center card text-center border border-base-content w-36 bg-base-100 p-4 modal-button hover:bg-red-200 cursor-pointer`} onClick={() => setIsCapture(true)}>
           <div className="flex m-auto">
             <BiBarcodeReader size={80} />
           </div>
         </label>
 
         <input type="checkbox" id="scanner-modal" className="modal-toggle" />
-        <label htmlFor="scanner-modal" className="modal cursor-pointer" onClick={() => setIsCapture(false)}>
-          <label className="modal-box relative" htmlFor="">
-            <div>
-              {barcode ? `バーコード：${barcode}` : isCapture && "スキャン中"}
+        <label
+          htmlFor="scanner-modal"
+          className="modal -top-2/3 p-0 cursor-pointer"
+          onClick={() => setIsCapture(false)}
+        >
+          <label className="modal-box" htmlFor="">
+            <div className="flex flex-col justify-center text-center mx-auto">
+              <p>{barcode ? `バーコード：${barcode}` : isCapture && "スキャン中"}</p>
               {error && <p style={{ color: 'red' }}>{error}</p>}
             </div>
 
-            <div id="camera-area" className="camera-area" style={{ visibility: !isCapture && 'hidden' }}>
-              <div className="detect-area">
-                <p className="relative top-14 text-lg text-red z-50 backdrop-blur-lg bg-white/30 text-center">
-                  バーコード
-                </p>
-              </div>
+            <div id="camera-area" className="camera-area">
+              <div className="detect-area"></div>
             </div>
           </label>
         </label>
       </div>
 
       {books.length > 0 && (
-        <div className="overflow-x-auto">
+        <div className="py-8 px-2">
+          <h2 className="text-xl font-bold font-mono text-center">読み込んだ書籍一覧</h2>
           <table className="table table-compact w-full">
             <thead>
               <tr>
                 <th>
-                  <label>
-                    <input type="checkbox" className="checkbox" />
+                  <label className="px-2">
+                    <input type="checkbox" className="checkbox checkbox-accent" />
                   </label>
                 </th>
-                <th>タイトル</th>
-                <th>著者</th>
-                <th>出版日</th>
-                <th>ページ数</th>
-                <th></th>
+                <th>詳細</th>
               </tr>
             </thead>
             <tbody>
-              {books.map(book => (
-                <tr key={book.isbn}>
+              {books.map((book, i) => (
+                <tr key={book.isbn} className={`${i === 0 && "bg-red-400"}`}>
                   <th>
-                    <label>
+                    <label className="px-2">
                       <input type="checkbox" className="checkbox" />
                     </label>
                   </th>
                   <td>
-                    <div className="flex items-center space-x-3">
-                      <div className="">
-                        {book?.thumbnail ? <img src={book.thumbnail} width={62} /> : '画像はありません'}
+                    <div className="flex items-start space-x-3 max-h-[120px] overflow-hidden">
+                      <div className="min-w-[72px]">
+                        {book?.thumbnail ? <img src={book.thumbnail} width={70} /> : '画像はありません'}
                       </div>
-                      <div className="w-1/2 whitespace-pre-wrap">
-                        <div className="font-bold">{book?.title}</div>
-                        {/* <div className="text-sm opacity-50">{book?.authors?.join(',')}</div> */}
+                      <div className="whitespace-pre-wrap">
+                        <div className="font-bold max-h-14 overflow-hidden">{book?.title}</div>
+                        <div className="gap-2 py-2">
+                          <div className="text-sm opacity-50 max-h-8 overflow-hidden">{book?.authors}</div>
+                          <div className="text-sm opacity-50 max-h-8 overflow-hidden">出版日：{book?.publishedDate}</div>
+                          <div className="text-sm opacity-50 max-h-8 overflow-hidden">ページ数：{book?.pageCount}</div>
+                        </div>
                       </div>
                     </div>
                   </td>
-
-                  <td>{book?.authors?.join(',')}</td>
-                  <td>{book?.publishedDate}</td>
-                  <td>{book?.pageCount}</td>
                 </tr>
               ))}
             </tbody>
-            <tfoot>
-              <tr>
-                <th></th>
-                <th>タイトル</th>
-                <th>著者</th>
-                <th>出版日</th>
-                <th>ページ数</th>
-                <th></th>
-              </tr>
-            </tfoot>
           </table>
         </div>
       )}
-
     </div>
   )
 }
