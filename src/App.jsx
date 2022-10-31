@@ -110,9 +110,9 @@ const App = () => {
         return
       }
       Quagga.start();
+      setRunning(true)
     });
 
-    setRunning(true)
     setBarcode(null)
 
   }, [isCapture])
@@ -144,7 +144,7 @@ const App = () => {
       <div className="flex justify-center p-4">
         <label
           htmlFor="scanner-modal"
-          className={`flex justify-center card text-center border border-base-content w-36 bg-base-100 p-4 modal-button hover:backdrop-blur-xl hover:bg-white/30 cursor-pointer`} onClick={() => setIsCapture(true)}>
+          className={`flex justify-center card text-center border border-base-content w-36 bg-base-100 p-4 modal-button hover:backdrop-blur-xl hover:bg-white/30 cursor-pointer ${isCapture && "modal-open"}`} onClick={() => setIsCapture(true)}>
           <div className="flex m-auto">
             <BiBarcodeReader size={80} />
           </div>
@@ -158,7 +158,7 @@ const App = () => {
         >
           <label className="modal-box" htmlFor="">
             <div className="text-center mx-auto min-h-16 p-4">
-              <p>{isCapture && "スキャン中"}</p>
+              <p>{running ? "スキャン中" : "カメラ起動中"}</p>
             </div>
 
             <div id="camera-area" className="camera-area">
@@ -178,7 +178,7 @@ const App = () => {
         <div className="alert alert-warning shadow-lg justify-center absolute bottom-4 max-w-[400px] mx-auto z-[99999]">
           <div>
             <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current flex-shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
-            <pre>{error}</pre>
+            <pre className="w-1/2">{error}</pre>
             <div className="flex-none">
               <button className="btn btn-sm btn-ghost" onClick={() => setIsCapture(false)}>やめる</button>
               <button className="btn btn-sm" onClick={() => setIsCapture(true)}>もう一度読み込む</button>
@@ -191,7 +191,7 @@ const App = () => {
         <div className="alert alert-success shadow-lg justify-center absolute bottom-4 max-w-[400px] mx-auto z-[99999]">
           <div>
             <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current flex-shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-            <span>読み込みに成功しました</span>
+            <span className="w-1/2">読み込みに成功しました</span>
             <div className="flex-none">
               <button className="btn btn-sm btn-ghost" onClick={() => setIsCapture(false)}>やめる</button>
               <button className="btn btn-sm" onClick={() => setIsCapture(true)}>続けて読み込む</button>
