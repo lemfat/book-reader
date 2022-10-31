@@ -13,8 +13,8 @@ const App = () => {
 
 
   const barcodeApi = async (isbn) => {
-    if (!((isbn.substring(0, 2) === "97" && isbn.length === 13) || (isbn.substring(0, 1) && isbn.length === 10))) {
-      setError("ISBNは「97」から始まる13桁、もしくは「4」から始まる10桁のコードである必要があります")
+    if (!(isbn.substring(0, 2) === "97" && isbn.length === 13)) {
+      setError("「97」から始まるバーコードを読み取って下さい")
       return
     }
 
@@ -124,7 +124,7 @@ const App = () => {
     <div className="flex flex-col justify-center p-4">
       <h2 className="text-2xl p-4 text-center">バーコードスキャナ</h2>
 
-      <div className="flex justify-center">
+      <div className="flex justify-center p-4">
         <label
           htmlFor="scanner-modal"
           className={`flex justify-center card text-center border border-base-content w-36 bg-base-100 p-4 modal-button hover:bg-red-200 cursor-pointer`} onClick={() => setIsCapture(true)}>
@@ -136,13 +136,13 @@ const App = () => {
         <input type="checkbox" id="scanner-modal" className="modal-toggle" />
         <label
           htmlFor="scanner-modal"
-          className="modal -top-2/3 p-0 cursor-pointer"
+          className="modal -top-[60%] p-0 cursor-pointer"
           onClick={() => setIsCapture(false)}
         >
           <label className="modal-box" htmlFor="">
-            <div className="flex flex-col justify-center text-center mx-auto">
+            <div className="text-center mx-auto min-h-16 p-4">
               <p>{barcode ? `バーコード：${barcode}` : isCapture && "スキャン中"}</p>
-              {error && <p style={{ color: 'red' }}>{error}</p>}
+              <p className={`text-red-400 ${!error && "invisible"}`}>{error}</p>
             </div>
 
             <div id="camera-area" className="camera-area">
@@ -154,7 +154,7 @@ const App = () => {
 
       {books.length > 0 && (
         <div className="py-8 px-2 max-h-[75%] overflow-auto">
-          <h2 className="text-xl font-bold font-mono text-center">読み込んだ書籍一覧<div class="badge">{books.length}</div></h2>
+          <h2 className="text-xl font-bold font-mono text-center">読み込んだ書籍一覧<div class="badge badge-accent mx-2 px-2">{books.length}</div></h2>
           <table className="table table-compact w-full">
             <thead>
               <tr>

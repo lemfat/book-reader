@@ -3,19 +3,19 @@
   overflow: hidden;
   width: 360px;
   height: 180px;
-  /* relativeに設定 */
   position: relative;
-  /* 検出範囲のサイズに合わせ枠線を引く */
 }
 .camera-area video, .camera-area canvas {
   margin-top: -50px;
-  width: 400px;
-  height: 400px;
+  width: 90%;
+  background-color: red;
+  margin: 0 auto;
+  z-index: 10000;
 }
 .camera-area .detect-area {
   position: absolute;
-  top: 33%;
-  bottom: 33%;
+  top: 20%;
+  bottom: 20%;
   left: 10%;
   right: 10%;
   border: 2px solid #000;
