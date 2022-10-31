@@ -7,19 +7,19 @@
 }
 .camera-area video, .camera-area canvas {
   position: relative;
-  top: -180px;
+  top: -300px;
   width: 100%;
   height: auto;
   margin: 0 auto;
 }
 .camera-area .detect-area {
   position: absolute;
-  top: -180px;
+  top: -300px;
   top: 20%;
   bottom: 20%;
   left: 10%;
   right: 10%;
-  border: 2px solid #000;
+  border: 2rem solid white;
   z-index: 20000;
 }
 
