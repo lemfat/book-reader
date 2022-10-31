@@ -94,9 +94,14 @@ const App = () => {
     // カメラ起動中にカメラを停止する操作が行われた
     if (!isCapture && running) {
       setRunning(false);
+      document.getElementById('scanner-modal').checked = false;
       Quagga.stop()
       return
     }
+
+    setSuccess(false);
+    setError(null)
+    document.getElementById('scanner-modal').checked = true;
 
     Quagga.onDetected(result => {
       if (result !== undefined) {
@@ -142,104 +147,115 @@ const App = () => {
       <h2 className="text-2xl p-4 text-center">バーコードスキャナ</h2>
 
       <div className="flex justify-center p-4">
-        <label
-          htmlFor="scanner-modal"
-          className={`flex justify-center card text-center border border-base-content w-36 bg-base-100 p-4 modal-button hover:backdrop-blur-xl hover:bg-white/30 cursor-pointer ${isCapture && "modal-open"}`} onClick={() => setIsCapture(true)}>
+        <button
+          className={`flex justify-center card text-center border border-base-content w-36 bg-base-100 p-4 hover:backdrop-blur-xl hover:bg-white/30 cursor-pointer`} onClick={() => setIsCapture(true)}>
           <div className="flex m-auto">
             <BiBarcodeReader size={80} />
           </div>
-        </label>
+        </button>
 
         <input type="checkbox" id="scanner-modal" className="modal-toggle" />
-        <label
-          htmlFor="scanner-modal"
-          className="modal -top-[60%] p-0 cursor-pointer"
-          onClick={() => setIsCapture(false)}
-        >
-          <label className="modal-box" htmlFor="">
+        <div className="modal -top-[60%]">
+          <div className="modal-box" htmlFor="">
+            <label
+              className="btn btn-sm btn-circle absolute right-2 top-2"
+              onClick={() => setIsCapture(false)}
+            >
+              ✕
+            </label>
             <div className="text-center mx-auto min-h-16 p-4">
-              <p>{running ? "スキャン中" : "カメラ起動中"}</p>
+              <p>{running ? "スキャン中" : isCapture ? "カメラ起動中" : "カメラ停止中"}</p>
             </div>
 
             <div id="camera-area" className="camera-area">
               <div className="detect-area"></div>
             </div>
-          </label>
-        </label>
+          </div>
+        </div>
       </div>
 
-      {loading && (
-        <div className="loading">
-          <span className="loader"></span>
-        </div>
-      )}
+      {
+        loading && (
+          <div className="loading">
+            <span className="loader"></span>
+          </div>
+        )
+      }
 
-      {error && !loading && (
-        <div className="alert alert-warning shadow-lg justify-center absolute bottom-4 max-w-[400px] mx-auto z-[99999]">
-          <div>
-            <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current flex-shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
-            <pre className="w-1/2">{error}</pre>
-            <div className="flex-none">
-              <button className="btn btn-sm btn-ghost" onClick={() => setIsCapture(false)}>やめる</button>
-              <button className="btn btn-sm" onClick={() => setIsCapture(true)}>もう一度読み込む</button>
+      {
+        error && !loading && (
+          <div className="alert shadow-lg w-[90%] mx-auto z-[99999]">
+            <div className="flex flex-col">
+              <div className="flex text-warning items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current flex-shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                <pre className="ml-4">{error}</pre>
+              </div>
+              <div className="flex gap-8 p-4">
+                <button className="btn btn-sm btn-ghost" onClick={() => setError(null)}>やめる</button>
+                <button className="btn btn-sm btn-outline glass hover:text-white" onClick={() => setIsCapture(true)}>もう一度読み込む</button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )
+      }
 
-      {success && !loading && (
-        <div className="alert alert-success shadow-lg justify-center absolute bottom-4 max-w-[400px] mx-auto z-[99999]">
-          <div>
-            <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current flex-shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-            <span className="w-1/2">読み込みに成功しました</span>
-            <div className="flex-none">
-              <button className="btn btn-sm btn-ghost" onClick={() => setIsCapture(false)}>やめる</button>
-              <button className="btn btn-sm" onClick={() => setIsCapture(true)}>続けて読み込む</button>
+      {
+        success && !loading && (
+          <div className="alert shadow-lg w-[90%] mx-auto z-[99999]">
+            <div className="flex text-accent items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current flex-shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              <span className="text-accent ml-4">読み込みに成功しました</span>
+            </div>
+            <div className="flex gap-4">
+              <button className="btn btn-sm btn-ghost" onClick={() => setSuccess(false)}>やめる</button>
+              <button className="btn btn-sm btn-outline glass hover:text-white" onClick={() => setIsCapture(true)}>続けて読み込む</button>
             </div>
           </div>
-        </div>
-      )}
+        )
+      }
 
-      {books.length > 0 && (
-        <div className="py-8 px-2 max-h-[75%] overflow-auto">
-          <h2 className="text-xl font-bold font-mono text-center">読み込んだ書籍一覧<div className="badge badge-accent mx-2 px-2">{books.length}</div></h2>
-          <table className="table table-compact w-full">
-            <thead>
-              <tr>
-                <th></th>
-                <th>詳細</th>
-              </tr>
-            </thead>
-            <tbody>
-              {books.map((book, i) => (
-                <tr key={book.isbn}>
-                  <th>
-                    <label className="px-2">
-                      <input type="checkbox" className="checkbox" defaultChecked={true} />
-                    </label>
-                  </th>
-                  <td>
-                    <div className="flex items-start space-x-3 max-h-[120px] overflow-hidden">
-                      <div className="min-w-[72px]">
-                        {book?.thumbnail ? <img src={book.thumbnail} width={70} /> : '画像はありません'}
-                      </div>
-                      <div className="whitespace-pre-wrap">
-                        <div className="font-bold max-h-14 overflow-hidden">{book?.title}</div>
-                        <div className="gap-2 py-2">
-                          <div className="text-sm opacity-50 max-h-8 overflow-hidden">{book?.authors}</div>
-                          <div className="text-sm opacity-50 max-h-8 overflow-hidden">出版日：{book?.publishedDate}</div>
-                          <div className="text-sm opacity-50 max-h-8 overflow-hidden">ページ数：{book?.pageCount}</div>
+      {
+        books.length > 0 && (
+          <div className="py-8 px-2 max-h-[75%] overflow-auto">
+            <h2 className="text-xl font-bold font-mono text-center py-4">読み込んだ書籍一覧<div className="badge badge-accent mx-2 px-2">{books.length}</div></h2>
+            <table className="table table-compact w-full">
+              <thead>
+                <tr>
+                  <th></th>
+                  <th>詳細</th>
+                </tr>
+              </thead>
+              <tbody>
+                {books.map((book, i) => (
+                  <tr key={book.isbn}>
+                    <th>
+                      <label className="px-2">
+                        <input type="checkbox" className="checkbox" defaultChecked={true} />
+                      </label>
+                    </th>
+                    <td>
+                      <div className="flex items-start space-x-3 max-h-[120px] overflow-hidden">
+                        <div className="min-w-[72px]">
+                          {book?.thumbnail ? <img src={book.thumbnail} width={70} /> : '画像はありません'}
+                        </div>
+                        <div className="whitespace-pre-wrap">
+                          <div className="font-bold max-h-14 overflow-hidden">{book?.title}</div>
+                          <div className="gap-2 py-2">
+                            <div className="text-sm opacity-50 max-h-8 overflow-hidden">{book?.authors}</div>
+                            <div className="text-sm opacity-50 max-h-8 overflow-hidden">出版日：{book?.publishedDate}</div>
+                            <div className="text-sm opacity-50 max-h-8 overflow-hidden">ページ数：{book?.pageCount}</div>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )
+      }
+    </div >
   )
 }
 
