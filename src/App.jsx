@@ -230,7 +230,7 @@ const App = () => {
                   <tr key={book.isbn}>
                     <th>
                       <label className="px-2">
-                        <input type="checkbox" className="checkbox" defaultChecked={true} />
+                        <input type="checkbox" className="checkbox checkbox-accent" defaultChecked={true} />
                       </label>
                     </th>
                     <td>
