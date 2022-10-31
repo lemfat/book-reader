@@ -1,13 +1,13 @@
 .camera-area {
   margin: auto;
   overflow: hidden;
-  width: 360px;
-  height: 240px;
+  width: 320px;
+  height: 160px;
   position: relative;
 }
 .camera-area video, .camera-area canvas {
-  margin-top: -50px;
-  width: 90%;
+  margin-top: -200px;
+  width: 100%;
   height: auto;
   margin: 0 auto;
 }
@@ -23,9 +23,7 @@
 .loading {
   position: fixed;
   inset: 0;
-  z-index: 10;
   min-height: 100vh;
-  min-width: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -36,7 +34,7 @@
 
 .loader {
   color: #ffffff;
-  font-size: 20px;
+  font-size: 1em;
   margin: 100px auto;
   width: 1em;
   height: 1em;
