@@ -2,11 +2,11 @@
   margin: auto;
   overflow: hidden;
   width: 320px;
-  height: 160px;
+  height: 320px;
   position: relative;
 }
 .camera-area video, .camera-area canvas {
-  margin-top: -200px;
+  margin-top: 400px;
   width: 100%;
   height: auto;
   margin: 0 auto;
