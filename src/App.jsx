@@ -64,7 +64,12 @@ const App = () => {
         frameRate: 10,
         facingMode: "environment"
       },
-      area: { top: "20%", right: "10%", left: "10%", bottom: "20%" },
+      area: {
+        top: "20%",
+        right: "0%",
+        left: "0%",
+        bottom: "20%"
+      },
       singleChannel: false
     },
     locator: {
