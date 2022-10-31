@@ -8,13 +8,25 @@ const App = () => {
   const [isCapture, setIsCapture] = useState(false)
   const [running, setRunning] = useState(false)
   const [barcode, setBarcode] = useState(null)
+  const [loading, setLoading] = useState(false)
   const [books, setBooks] = useState([])
   const [error, setError] = useState(null)
 
+  useEffect(() => {
+    if (!error) return
+
+    let timeoutId = setTimeout(() => {
+      setError(null)
+    }, 4000)
+
+    return () => {
+      clearTimeout(timeoutId)
+    }
+  }, [error])
 
   const barcodeApi = async (isbn) => {
     if (!(isbn.substring(0, 2) === "97" && isbn.length === 13)) {
-      setError("「97」から始まるバーコードを読み取って下さい")
+      setError(`「97」から始まるバーコードを読み取って下さい\n読み込んだバーコード:${isbn}`)
       return
     }
 
@@ -35,7 +47,7 @@ const App = () => {
 
     const bookData = data.items[0]
 
-    // 欲しい情報を返却
+    // 書籍データを取得
     const bookInfo = {
       isbn: bookData?.volumeInfo?.industryIdentifiers[1]?.identifier,
       title: bookData?.volumeInfo?.title,
@@ -49,7 +61,6 @@ const App = () => {
     setBooks(prev => [bookInfo, ...prev])
   }
 
-
   const config = {
     inputStream: {
       name: "Live",
@@ -60,7 +71,7 @@ const App = () => {
         successTimeout: 500,
         codeRepetition: true,
         tryVertical: true,
-        frameRate: 15,
+        frameRate: 10,
         facingMode: "environment"
       },
       singleChannel: false
@@ -108,15 +119,23 @@ const App = () => {
 
     setRunning(true)
     setBarcode(null)
-    setError(null)
 
   }, [isCapture])
 
   useEffect(() => {
-    // Quaggaがバーコードを読み込んだ
-    if (barcode) {
-      // setIsCapture(false)
-      barcodeApi(barcode)
+    // Quaggaがバーコードを読み込んだときの処理
+    if (!barcode) return
+
+    setLoading(true)
+    setIsCapture(false)
+    barcodeApi(barcode)
+    let timeoutId = setTimeout(() => {
+      setIsCapture(true)
+      setLoading(false)
+    }, 500)
+
+    return () => {
+      clearTimeout(timeoutId)
     }
   }, [barcode])
 
@@ -127,7 +146,7 @@ const App = () => {
       <div className="flex justify-center p-4">
         <label
           htmlFor="scanner-modal"
-          className={`flex justify-center card text-center border border-base-content w-36 bg-base-100 p-4 modal-button hover:bg-red-200 cursor-pointer`} onClick={() => setIsCapture(true)}>
+          className={`flex justify-center card text-center border border-base-content w-36 bg-base-100 p-4 modal-button hover:backdrop-blur-xl hover:bg-white/30 cursor-pointer`} onClick={() => setIsCapture(true)}>
           <div className="flex m-auto">
             <BiBarcodeReader size={80} />
           </div>
@@ -141,8 +160,7 @@ const App = () => {
         >
           <label className="modal-box" htmlFor="">
             <div className="text-center mx-auto min-h-16 p-4">
-              <p>{barcode ? `バーコード：${barcode}` : isCapture && "スキャン中"}</p>
-              <p className={`text-red-400 ${!error && "invisible"}`}>{error}</p>
+              <p>{isCapture && "スキャン中"}</p>
             </div>
 
             <div id="camera-area" className="camera-area">
@@ -152,26 +170,37 @@ const App = () => {
         </label>
       </div>
 
+      {loading && (
+        <div class="loading">
+          <span class="loader"></span>
+        </div>
+      )}
+
+      {error && !loading && (
+        <div class="alert alert-warning shadow-lg justify-center max-w-md mx-auto z-[99999]">
+          <div>
+            <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current flex-shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+            <pre>{error}</pre>
+          </div>
+        </div>
+      )}
+
       {books.length > 0 && (
         <div className="py-8 px-2 max-h-[75%] overflow-auto">
           <h2 className="text-xl font-bold font-mono text-center">読み込んだ書籍一覧<div class="badge badge-accent mx-2 px-2">{books.length}</div></h2>
           <table className="table table-compact w-full">
             <thead>
               <tr>
-                <th>
-                  <label className="px-2">
-                    <input type="checkbox" className="checkbox checkbox-accent" />
-                  </label>
-                </th>
+                <th></th>
                 <th>詳細</th>
               </tr>
             </thead>
             <tbody>
               {books.map((book, i) => (
-                <tr key={book.isbn} className={`${i === 0 && "bg-red-400"}`}>
+                <tr key={book.isbn}>
                   <th>
                     <label className="px-2">
-                      <input type="checkbox" className="checkbox" />
+                      <input type="checkbox" className="checkbox" checked="checked" />
                     </label>
                   </th>
                   <td>
