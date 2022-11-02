@@ -3,53 +3,35 @@ import Quagga from "quagga";
 import axios from 'axios'
 import "./App.css"
 import { BiBarcodeReader } from 'react-icons/bi';
+import { Alert } from './components/Alert';
+import { Loading } from './components/Loading';
+import { BookInfoTable } from './components/BoolInfo';
+// import { config } from "./lib/config"
+
+let cnt = 0
+let prev = ""
 
 const App = () => {
   const [isCapture, setIsCapture] = useState(false)
   const [running, setRunning] = useState(false)
-  const [barcode, setBarcode] = useState(null)
   const [loading, setLoading] = useState(false)
   const [books, setBooks] = useState([])
-  const [success, setSuccess] = useState(null)
-  const [error, setError] = useState(null)
+  const [message, setMessage] = useState(null)
 
-  const barcodeApi = async (isbn) => {
-    if (!(isbn.substring(0, 2) === "97" && isbn.length === 13)) {
-      setError(`「97」から始まるバーコードを読み取って下さい\n読み込んだバーコード:${isbn}`)
-      return
+  // messageを時間経過で削除
+  useEffect(() => {
+    if (!message) return
+
+    const waitMs = message.type === "error" ? 3000 : 1000
+
+    let timeoutId = setTimeout(() => {
+      setMessage(null)
+    }, waitMs)
+
+    return () => {
+      clearTimeout(timeoutId)
     }
-
-    const isReaded = books.find(book => book.isbn === isbn)
-    if (isReaded) {
-      setError("すでに読み込み済みの書籍です")
-      return
-    }
-    // ISBNから書籍データを取得する
-    const url = `https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}`
-    const { data } = (await axios.get(url))
-
-    // 検索した書籍データが存在しないとき
-    if (data.totalItems === 0) {
-      setError(`ISBNが${isbn}の書籍は見つかりませんでした`)
-      return
-    }
-
-    const bookData = data.items[0]
-
-    // 書籍データを取得
-    const bookInfo = {
-      isbn: bookData?.volumeInfo?.industryIdentifiers[1]?.identifier,
-      title: bookData?.volumeInfo?.title,
-      authors: bookData?.volumeInfo?.authors,
-      publishedDate: bookData?.volumeInfo?.publishedDate,
-      pageCount: bookData?.volumeInfo?.pageCount,
-      thumbnail: bookData?.volumeInfo?.imageLinks?.thumbnail,
-      infoLink: bookData?.volumeInfo?.infoLink
-    }
-
-    setBooks(prev => [bookInfo, ...prev])
-    setSuccess(true)
-  }
+  }, [message])
 
   const config = {
     inputStream: {
@@ -61,7 +43,8 @@ const App = () => {
         successTimeout: 500,
         codeRepetition: true,
         tryVertical: true,
-        frameRate: 10,
+        frameRate: 1,
+        frequency: 1,
         facingMode: "environment"
       },
       area: {
@@ -87,6 +70,85 @@ const App = () => {
     src: null
   };
 
+  const isValidIsbn = (isbn) => {
+    if (!(isbn.substring(0, 2) === "97" && isbn.length === 13)) {
+      return `「97」から始まるバーコードを読み取って下さい\n読み込んだバーコード:${isbn}`
+    }
+  }
+
+  const isRegisteredIsbn = (isbn) => {
+    if (books.find(book => book.isbn === isbn)) {
+      return `すでに登録済みの書籍です`
+    }
+  }
+
+  const barcodeApi = async (isbn) => {
+    let err = null
+
+    if (cnt < 5) {
+      if (prev === isbn) {
+        cnt += 1
+      } else {
+        prev = isbn
+        cnt = 1
+      }
+
+      return
+    }
+
+    cnt = 0
+
+    err = isValidIsbn(isbn)
+    if (err) return setMessage({
+      type: 'error',
+      content: err
+    })
+
+    setIsCapture(false)
+
+    err = isRegisteredIsbn(isbn)
+    if (err) return setMessage({
+      type: 'error',
+      content: err
+    })
+
+    setLoading(true)
+
+    // ISBNから書籍データを取得する
+    const url = `https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}`
+    const { data } = (await axios.get(url))
+
+    // 検索した書籍データが存在しないとき
+    if (data.totalItems === 0) {
+      return setMessage({
+        type: "error",
+        content: `ISBNが${isbn}の書籍は見つかりませんでした`
+      })
+    }
+
+    const bookData = data.items[0]
+
+    // 書籍データを取得
+    const bookInfo = {
+      isbn: bookData?.volumeInfo?.industryIdentifiers[1]?.identifier,
+      title: bookData?.volumeInfo?.title,
+      authors: bookData?.volumeInfo?.authors,
+      publishedDate: bookData?.volumeInfo?.publishedDate,
+      pageCount: bookData?.volumeInfo?.pageCount,
+      thumbnail: bookData?.volumeInfo?.imageLinks?.thumbnail,
+      infoLink: bookData?.volumeInfo?.infoLink
+    }
+
+    setBooks(prev => [bookInfo, ...prev])
+
+    setMessage({
+      type: 'success',
+      content: "読み取りに成功しました"
+    })
+    setLoading(false)
+    setIsCapture(true)
+  }
+
   useEffect(() => {
     // 初期状態
     if (!isCapture && !running) return;
@@ -98,16 +160,14 @@ const App = () => {
       Quagga.stop()
       return
     }
-
-    setSuccess(false);
-    setError(null)
     document.getElementById('scanner-modal').checked = true;
 
     Quagga.onDetected(result => {
       if (result !== undefined) {
-        setBarcode(result.codeResult.code)
+        const barcode = result.codeResult.code
+        barcodeApi(barcode)
       }
-    });
+    })
 
     Quagga.init(config, (err) => {
       if (err) {
@@ -116,31 +176,12 @@ const App = () => {
       }
       Quagga.start();
       setRunning(true)
+      return () => {
+        Quagga.stop()
+      }
     });
 
-    setBarcode(null)
-
   }, [isCapture])
-
-  useEffect(() => {
-    // Quaggaがバーコードを読み込んだときの処理
-    if (!barcode) return
-
-    setSuccess(false)
-    setError(null)
-    setLoading(true)
-
-    setIsCapture(false)
-    barcodeApi(barcode)
-
-    let timeoutId = setTimeout(() => {
-      setLoading(false)
-    }, 800)
-
-    return () => {
-      clearTimeout(timeoutId)
-    }
-  }, [barcode])
 
   return (
     <div className="flex flex-col justify-center p-4">
@@ -174,87 +215,11 @@ const App = () => {
         </div>
       </div>
 
-      {
-        loading && (
-          <div className="loading">
-            <span className="loader"></span>
-          </div>
-        )
-      }
+      <Loading loading={loading} />
+      <Alert message={message} />
 
-      {
-        error && !loading && (
-          <div className="alert shadow-lg w-[90%] mx-auto z-[99999]">
-            <div className="flex flex-col">
-              <div className="flex text-warning items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current flex-shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
-                <pre className="ml-4">{error}</pre>
-              </div>
-              <div className="flex gap-8 p-4">
-                <button className="btn btn-sm btn-ghost" onClick={() => setError(null)}>やめる</button>
-                <button className="btn btn-sm btn-outline glass hover:text-white" onClick={() => setIsCapture(true)}>もう一度読み込む</button>
-              </div>
-            </div>
-          </div>
-        )
-      }
+      <BookInfoTable books={books} />
 
-      {
-        success && !loading && (
-          <div className="alert shadow-lg w-[90%] mx-auto z-[99999]">
-            <div className="flex text-accent items-center">
-              <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current flex-shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-              <span className="text-accent ml-4">読み込みに成功しました</span>
-            </div>
-            <div className="flex gap-4">
-              <button className="btn btn-sm btn-ghost" onClick={() => setSuccess(false)}>やめる</button>
-              <button className="btn btn-sm btn-outline glass hover:text-white" onClick={() => setIsCapture(true)}>続けて読み込む</button>
-            </div>
-          </div>
-        )
-      }
-
-      {
-        books.length > 0 && (
-          <div className="py-8 px-2 max-h-[75%] overflow-auto">
-            <h2 className="text-xl font-bold font-mono text-center py-4">読み込んだ書籍一覧<div className="badge badge-accent mx-2 px-2">{books.length}</div></h2>
-            <table className="table table-compact w-full">
-              <thead>
-                <tr>
-                  <th></th>
-                  <th>詳細</th>
-                </tr>
-              </thead>
-              <tbody>
-                {books.map((book, i) => (
-                  <tr key={book.isbn}>
-                    <th>
-                      <label className="px-2">
-                        <input type="checkbox" className="checkbox checkbox-accent" defaultChecked={true} />
-                      </label>
-                    </th>
-                    <td>
-                      <div className="flex items-start space-x-3 max-h-[120px] overflow-hidden">
-                        <div className="min-w-[72px]">
-                          {book?.thumbnail ? <img src={book.thumbnail} width={70} /> : '画像はありません'}
-                        </div>
-                        <div className="whitespace-pre-wrap">
-                          <div className="font-bold max-h-14 overflow-hidden">{book?.title}</div>
-                          <div className="gap-2 py-2">
-                            <div className="text-sm opacity-50 max-h-8 overflow-hidden">{book?.authors}</div>
-                            <div className="text-sm opacity-50 max-h-8 overflow-hidden">出版日：{book?.publishedDate}</div>
-                            <div className="text-sm opacity-50 max-h-8 overflow-hidden">ページ数：{book?.pageCount}</div>
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )
-      }
     </div >
   )
 }
