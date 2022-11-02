@@ -5,8 +5,7 @@ import "./App.css"
 import { BiBarcodeReader } from 'react-icons/bi';
 import { Alert } from './components/Alert';
 import { Loading } from './components/Loading';
-import { BookInfoTable } from './components/BoolInfo';
-// import { config } from "./lib/config"
+import { BookInfoTable } from './components/BookInfo';
 
 let cnt = 0
 let prev = ""
@@ -46,7 +45,6 @@ const App = () => {
         codeRepetition: true,
         tryVertical: true,
         frameRate: 1,
-        frequency: 1,
         facingMode: "environment"
       },
       area: {
@@ -57,10 +55,6 @@ const App = () => {
       },
       singleChannel: false
     },
-    locator: {
-      patchSize: "medium",
-      halfSample: true
-    },
     decoder: {
       readers: [{
         format: "ean_reader",
@@ -68,7 +62,8 @@ const App = () => {
       }]
     },
     numOfWorker: navigator.hardwareConcurrency || 4,
-    locate: true,
+    frequency: 1,
+    locate: false,
     src: null
   };
 
