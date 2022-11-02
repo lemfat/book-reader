@@ -11,6 +11,8 @@ import { BookInfoTable } from './components/BoolInfo';
 let cnt = 0
 let prev = ""
 
+const sleep = (second) => new Promise(resolve => setTimeout(resolve, second * 1000))
+
 const App = () => {
   const [isCapture, setIsCapture] = useState(false)
   const [running, setRunning] = useState(false)
@@ -105,10 +107,6 @@ const App = () => {
     })
 
     setIsCapture(false)
-    setLoading(true)
-
-    const sleep = (second) => new Promise(resolve => setTimeout(resolve, second * 1000))
-    await sleep(0.5)
 
     err = isRegisteredIsbn(isbn)
     if (err) {
@@ -116,9 +114,10 @@ const App = () => {
         type: 'error',
         content: err
       })
-      setLoading(false)
       return
     }
+
+    setLoading(true)
 
     // ISBNから書籍データを取得する
     const url = `https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}`
@@ -126,10 +125,12 @@ const App = () => {
 
     // 検索した書籍データが存在しないとき
     if (data.totalItems === 0) {
-      return setMessage({
+      setMessage({
         type: "error",
         content: `ISBNが${isbn}の書籍は見つかりませんでした`
       })
+      setLoading(false)
+      return
     }
 
     const bookData = data.items[0]
@@ -147,11 +148,12 @@ const App = () => {
 
     setBooks(prev => [bookInfo, ...prev])
 
+    setLoading(false)
     setMessage({
       type: 'success',
       content: "読み取りに成功しました"
     })
-    setLoading(false)
+    await sleep(1)
     setIsCapture(true)
   }
 
