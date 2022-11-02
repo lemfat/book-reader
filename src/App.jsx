@@ -23,7 +23,7 @@ const App = () => {
   useEffect(() => {
     if (!message) return
 
-    const waitMs = message.type === "error" ? 3000 : 1000
+    const waitMs = message.type === "error" ? 3000 : 1500
 
     let timeoutId = setTimeout(() => {
       setMessage(null)
@@ -44,7 +44,6 @@ const App = () => {
         successTimeout: 500,
         codeRepetition: true,
         tryVertical: true,
-        frameRate: 1,
         facingMode: "environment"
       },
       area: {
@@ -62,7 +61,7 @@ const App = () => {
       }]
     },
     numOfWorker: navigator.hardwareConcurrency || 4,
-    frequency: 1,
+    frequency: 10,
     locate: false,
     src: null
   };
@@ -80,6 +79,7 @@ const App = () => {
   }
 
   const barcodeApi = async (isbn) => {
+    console.log(isbn, cnt)
     let err = null
 
     if (cnt < 5) {
@@ -148,7 +148,7 @@ const App = () => {
       type: 'success',
       content: "読み取りに成功しました"
     })
-    await sleep(1)
+    await sleep(1.5)
     setIsCapture(true)
   }
 
