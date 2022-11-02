@@ -105,14 +105,20 @@ const App = () => {
     })
 
     setIsCapture(false)
+    setLoading(true)
+
+    const sleep = (second) => new Promise(resolve => setTimeout(resolve, second * 1000))
+    await sleep(0.5)
 
     err = isRegisteredIsbn(isbn)
-    if (err) return setMessage({
-      type: 'error',
-      content: err
-    })
-
-    setLoading(true)
+    if (err) {
+      setMessage({
+        type: 'error',
+        content: err
+      })
+      setLoading(false)
+      return
+    }
 
     // ISBNから書籍データを取得する
     const url = `https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}`
@@ -199,7 +205,7 @@ const App = () => {
         <div className="modal -top-[60%]">
           <div className="modal-box" htmlFor="">
             <label
-              className="btn btn-sm btn-circle absolute right-2 top-2"
+              className="btn btn-md btn-circle btn-secondary text-secondary-content absolute right-2 top-2"
               onClick={() => setIsCapture(false)}
             >
               ✕
