@@ -242,7 +242,7 @@ const App = () => {
         )}
       </div>
 
-      <div className="fixed bottom-8 w-full">
+      <div className="fixed bottom-4 w-full">
         <div className="flex justify-around">
           {isCapture ? (
             <button
