@@ -186,10 +186,9 @@ const App = () => {
   }, [isCapture])
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col relative">
 
       <div id="camera-area" className={`camera-area ${!isCapture && "invisible"}`}>
-        <FiCamera size={28} />
         <div className="detect-area">
           {isRunning &&
             <FaBarcode size={120} color={"black"} />
@@ -200,7 +199,7 @@ const App = () => {
       <Loading loading={loading} />
       <Alert message={message} />
 
-      <div className="max-h-[380px] overflow-auto">
+      <div className="max-h-[424px] overflow-auto">
         {books.length > 0 && (
           <div className="px-2">
             <table className="table table-zebra w-full">
