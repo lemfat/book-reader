@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react'
 import Quagga from "quagga";
 import axios from 'axios'
 import "./App.css"
-import { BiBarcodeReader } from 'react-icons/bi';
 import { Alert } from './components/Alert';
 import { Loading } from './components/Loading';
-import { BookInfoTable } from './components/BookInfo';
+import { FaBarcode } from 'react-icons/fa';
+import { SiNotion } from 'react-icons/si'
+import { FiCamera, FiCameraOff } from "react-icons/fi"
 
 let cnt = 0
 let prev = ""
@@ -14,7 +15,7 @@ const sleep = (second) => new Promise(resolve => setTimeout(resolve, second * 10
 
 const App = () => {
   const [isCapture, setIsCapture] = useState(false)
-  const [running, setRunning] = useState(false)
+  const [isRunning, setIsRunning] = useState(false)
   const [loading, setLoading] = useState(false)
   const [books, setBooks] = useState([])
   const [message, setMessage] = useState(null)
@@ -154,16 +155,14 @@ const App = () => {
 
   useEffect(() => {
     // 初期状態
-    if (!isCapture && !running) return;
+    if (!isCapture && !isRunning) return;
 
     // カメラ起動中にカメラを停止する操作が行われた
-    if (!isCapture && running) {
-      setRunning(false);
-      document.getElementById('scanner-modal').checked = false;
+    if (!isCapture && isRunning) {
+      setIsRunning(false);
       Quagga.stop()
       return
     }
-    document.getElementById('scanner-modal').checked = true;
 
     Quagga.onDetected(result => {
       if (result !== undefined) {
@@ -178,7 +177,7 @@ const App = () => {
         return
       }
       Quagga.start();
-      setRunning(true)
+      setIsRunning(true)
       return () => {
         Quagga.stop()
       }
@@ -187,42 +186,99 @@ const App = () => {
   }, [isCapture])
 
   return (
-    <div className="flex flex-col justify-center p-4">
-      <h2 className="text-2xl p-4 text-center">バーコードスキャナ</h2>
+    <div className="flex flex-col">
 
-      <div className="flex justify-center p-4">
-        <button
-          className={`flex justify-center card text-center border border-base-content w-36 bg-base-100 p-4 hover:backdrop-blur-xl hover:bg-white/30 cursor-pointer`} onClick={() => setIsCapture(true)}>
-          <div className="flex m-auto">
-            <BiBarcodeReader size={80} />
-          </div>
-        </button>
-
-        <input type="checkbox" id="scanner-modal" className="modal-toggle" />
-        <div className="modal -top-[60%]">
-          <div className="modal-box" htmlFor="">
-            <label
-              className="btn btn-md btn-circle btn-secondary text-secondary-content absolute right-2 top-2"
-              onClick={() => setIsCapture(false)}
-            >
-              ✕
-            </label>
-            <div className="text-center mx-auto min-h-16 p-4">
-              <p>{running ? "スキャン中" : isCapture ? "カメラ起動中" : "カメラ停止中"}</p>
-            </div>
-
-            <div id="camera-area" className="camera-area">
-              <div className="detect-area"></div>
-            </div>
-          </div>
+      <div id="camera-area" className={`camera-area ${!isCapture && "invisible"}`}>
+        <div className="detect-area">
+          {isRunning &&
+            <FaBarcode size={120} color={"black"} />
+          }
         </div>
       </div>
 
       <Loading loading={loading} />
       <Alert message={message} />
 
-      <BookInfoTable books={books} />
+      <h2 className="text-xl font-bold font-mono text-center p-10">読み込んだ書籍一覧</h2>
+      <div className="max-h-[586px] overflow-auto">
+        {books.length > 0 && (
+          <div className="px-2">
+            <table className="table table-zebra w-full">
+              <thead>
+                <tr>
+                  <th></th>
+                  <th className="text-center">詳細</th>
+                </tr>
+              </thead>
+              <tbody>
+                {books.map((book, i) => (
+                  <tr key={book.isbn}>
+                    <th className="">
+                      <label className="">
+                        <input type="checkbox" className="checkbox checkbox-accent" defaultChecked={true} />
+                      </label>
+                    </th>
+                    <td>
+                      <div className="flex items-start space-x-3 p-2 max-h-[120px] overflow-hidden">
+                        <div className="min-w-[72px]">
+                          {book?.thumbnail ? <img src={book.thumbnail} width={70} /> : '画像はありません'}
+                        </div>
+                        <div className="whitespace-pre-wrap">
+                          <div className="font-bold max-h-14 overflow-hidden">{book?.title}</div>
+                          <div className="gap-2 py-2">
+                            <div className="text-sm opacity-50 max-h-8 overflow-hidden">{book?.authors}</div>
+                            <div className="text-sm opacity-50 max-h-8 overflow-hidden">出版日：{book?.publishedDate}</div>
+                            <div className="text-sm opacity-50 max-h-8 overflow-hidden">ページ数：{book?.pageCount}</div>
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
 
+      <div className="fixed bottom-8 w-full">
+        <div className="flex justify-around">
+          {isCapture ? (
+            <button
+              className={`btn btn-outline btn-error text-error-content ${loading && "loading"}`}
+              onClick={() => setIsCapture(false)}
+            >
+              <div className="flex items-center gap-2">
+                <FiCameraOff size={28} />
+                <p>停止する</p>
+              </div>
+            </button>
+          ) : (
+            <button
+              className={`btn btn-outline btn-accent text-accent-content ${loading && "loading"}`}
+              onClick={() => setIsCapture(true)}
+            >
+              <div className="flex items-center gap-2">
+                <FiCamera size={28} />
+                <p>起動する</p>
+              </div>
+            </button>
+          )}
+
+          <button
+            className="btn btn-outline relative"
+            disabled={books.length === 0}
+          >
+            <div className="badge badge-ghost badge-lg p-2 absolute -top-3 -left-3">
+              {books.length}
+            </div>
+            <div className="flex items-center gap-2">
+              <SiNotion size={28} />
+              <p>Notionへ</p>
+            </div>
+          </button>
+        </div>
+      </div>
     </div >
   )
 }
