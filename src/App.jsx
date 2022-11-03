@@ -199,7 +199,9 @@ const App = () => {
       <Loading loading={loading} />
       <Alert message={message} />
 
-      <div className="max-h-[424px] overflow-auto">
+      <h2 className="text-xl font-bold font-mono text-center p-10">書籍一覧</h2>
+
+      <div className="max-h-[420px] overflow-auto">
         {books.length > 0 && (
           <div className="px-2">
             <table className="table table-zebra w-full">
