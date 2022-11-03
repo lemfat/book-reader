@@ -199,7 +199,7 @@ const App = () => {
       <Loading loading={loading} />
       <Alert message={message} />
 
-      <h2 className="text-xl font-bold font-mono text-center p-10">書籍一覧</h2>
+      <h2 className="text-xl font-bold font-mono text-center pt-10">書籍一覧</h2>
 
       <div className="max-h-[420px] overflow-auto">
         {books.length > 0 && (
