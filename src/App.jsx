@@ -189,6 +189,7 @@ const App = () => {
     <div className="flex flex-col">
 
       <div id="camera-area" className={`camera-area ${!isCapture && "invisible"}`}>
+        <FiCamera size={28} />
         <div className="detect-area">
           {isRunning &&
             <FaBarcode size={120} color={"black"} />
@@ -199,8 +200,7 @@ const App = () => {
       <Loading loading={loading} />
       <Alert message={message} />
 
-      <h2 className="text-xl font-bold font-mono text-center p-10">読み込んだ書籍一覧</h2>
-      <div className="max-h-[586px] overflow-auto">
+      <div className="max-h-[380px] overflow-auto">
         {books.length > 0 && (
           <div className="px-2">
             <table className="table table-zebra w-full">
